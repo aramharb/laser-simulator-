@@ -1,0 +1,572 @@
+<main class="screen" [class.calibrating]="calibrationState() === 'manual_adjusting'">
+
+  <div #pixiHost class="pixi-host" aria-label="Simulation stage"></div>
+
+
+
+  <section class="hud hud-top" aria-label="session controls">
+
+    <div class="session-controls">
+
+      <div class="difficulty-controls" aria-label="difficulty buttons">
+
+        @for (difficulty of difficultyOptions; track difficulty) {
+
+          <button
+
+            type="button"
+
+            class="session-btn difficulty-btn"
+
+            [class.active]="selectedLevelDifficulty() === difficulty"
+
+            (click)="chooseCurrentLevelDifficulty(difficulty)">
+
+            {{ difficulty }}
+
+          </button>
+
+        }
+
+      </div>
+
+
+
+      <div class="run-controls">
+
+        <button
+
+          type="button"
+
+          class="session-btn"
+
+          (click)="startSession()"
+
+          [disabled]="isSessionRunning() || !isSelectedDifficultyAvailable() || isCalibrationRunning() || calibrationState() !== 'calibrated'">
+
+          Start
+
+        </button>
+
+        <button
+
+          type="button"
+
+          class="session-btn secondary"
+
+          (click)="restartSession()">
+
+          Restart
+
+        </button>
+
+      </div>
+
+    </div>
+
+                
+
+    <div class="timer-box">
+
+      <span>Minuteur</span>
+
+      <strong>{{ timerLabel() }}</strong>
+
+    </div>
+
+
+
+    <p class="session-note" [class.empty]="!isSelectedDifficultyAvailable()">
+
+      @if (isSelectedDifficultyAvailable()) {
+
+        {{ objectiveLabel() }}
+
+      } @else {
+
+        Level {{ selectedDifficultyLevel() }} is empty for now
+
+      }
+
+    </p>
+
+
+
+
+    
+
+  </section>
+
+
+
+  @if (isCalibrationOverlayVisible()) {
+
+    <div class="calibration-overlay" aria-label="Manual green-screen calibration guidance">
+
+      <section
+
+        class="calibration-panel"
+
+        [class.adjusting]="calibrationState() === 'manual_adjusting'"
+
+        [class.calibrated]="calibrationState() === 'calibrated'"
+
+        [class.failed]="calibrationState() === 'calibration_failed'">
+
+        <p class="calibration-panel-eyebrow">Green screen calibration</p>
+
+        <h2>{{ calibrationStateLabel() }}</h2>
+
+        <p class="calibration-panel-copy">{{ calibrationMessage() }}</p>
+
+        <div class="calibration-panel-meta">
+
+          <span>Mode {{ calibrationModeLabel() }}</span>
+
+          <span>BBox {{ calibrationBboxLabel() }}</span>
+
+          <span>Homography {{ calibrationHomographyLabel() }}</span>
+
+          <span>Confidence {{ calibrationConfidenceLabel() }}</span>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  }
+
+
+
+  @if (!isSessionRunning()) {
+
+    <section class="hud hud-left" aria-label="scoreboard">
+
+      <article class="metric">
+
+        <span>Score</span>
+
+        <strong>{{ score() }}</strong>
+
+      </article>
+
+      <article class="metric">
+
+        <span>Accuracy</span>
+
+        <strong>{{ accuracy() }}%</strong>
+
+      </article>
+
+      <article class="metric">
+
+        <span>Hits</span>
+
+        <strong>{{ hits() }}</strong>
+
+      </article>
+
+      <article class="metric">
+
+        <span>Points</span>
+
+        <strong>{{ points() }}</strong>
+
+      </article>
+
+
+
+      <div class="calibration-controls">
+
+        <button
+
+          type="button"
+
+          class="session-btn calibration-btn"
+
+          (click)="startCalibration()"
+
+          [disabled]="isCalibrationRunning()">
+
+          Calibrate
+
+        </button>
+
+      </div>
+
+
+
+      @if (calibrationState() !== 'idle') {
+
+        <div
+
+          class="calibration-summary"
+
+          [class.waiting]="calibrationState() === 'manual_adjusting'"
+
+          [class.done]="calibrationState() === 'calibrated'"
+
+          [class.error]="calibrationState() === 'calibration_failed' || calibrationState() === 'error'">
+
+          <p>Calibration</p>
+
+          <strong>{{ calibrationStateLabel() }}</strong>
+
+          <small>Mode: {{ calibrationModeLabel() }}</small>
+
+          <small>Homography: {{ calibrationHomographyLabel() }}</small>
+
+          <small>Confidence: {{ calibrationConfidenceLabel() }}</small>
+
+          @if (calibrationBboxLabel() !== '--') {
+
+            <small>BBox: {{ calibrationBboxLabel() }}</small>
+
+          }
+
+          @if (calibrationElapsedLabel() !== '--') {
+
+            <small>Elapsed: {{ calibrationElapsedLabel() }}</small>
+
+          }
+
+          @if (calibrationReason()) {
+
+            <small>{{ calibrationReason() }}</small>
+
+          }
+
+          @if (calibrationState() === 'error' && calibrationErrorMessage()) {
+
+            <small>{{ calibrationErrorMessage() }}</small>
+
+          }
+
+        </div>
+
+      }
+
+
+
+      @if (lastShotDebug(); as shot) {
+
+        <div class="shot-debug">
+
+          <p>Last shot</p>
+
+          <small>Arena: {{ shot.arenaX }}, {{ shot.arenaY }}</small>
+
+          <small>World: {{ shot.worldX }}, {{ shot.worldY }}</small>
+
+          @if (shot.rawX !== undefined && shot.rawY !== undefined) {
+
+            <small>Raw: {{ shot.rawX }}, {{ shot.rawY }}</small>
+
+          }
+
+          <small>Pointer: {{ shot.pointerDispatched ? 'yes' : 'no' }}</small>
+
+          @if (shot.color) {
+
+            <small>Color: {{ shot.color }}</small>
+
+          }
+
+          @if (shot.confidence !== undefined) {
+
+            <small>Confidence: {{ shot.confidence }}</small>
+
+          }
+
+        </div>
+
+      } @else {
+
+        <div class="shot-debug">
+
+          <p>Last shot</p>
+
+          <small>No shot detected yet.</small>
+
+        </div>
+
+      }
+
+    </section>
+
+  }
+
+
+
+  <section class="hud hud-right" aria-label="levels">
+
+    <button type="button" class="levels-toggle" (click)="toggleLevelsMenu()">
+
+      <span>Levels</span>
+
+      <strong>Level {{ selectedDifficultyLevel() }}</strong>
+
+    </button>
+
+
+
+    @if (isLevelsMenuOpen()) {
+
+      <div class="levels-scroll">
+
+        @for (level of levelOptions; track level) {
+
+          <button
+
+            type="button"
+
+            class="level-btn"
+
+            [class.active]="selectedDifficultyLevel() === level"
+
+            [class.empty]="isLevelEmpty(level)"
+
+            (click)="chooseLevel(level)">
+
+            <span>Level {{ level }}</span>
+
+            <small>{{ isLevelEmpty(level) ? 'Empty' : 'Ready' }} | {{ getLevelDifficulty(level) }}</small>
+
+          </button>
+
+        }
+
+      </div>
+
+    }
+
+
+
+    @if (isTargetScoreEditorVisible()) {
+
+      <div class="target-score-editor" aria-label="target score controls">
+
+        <p>Target Score (Level {{ selectedDifficultyLevel() }})</p>
+
+
+
+        <div class="target-score-controls">
+
+          <button
+
+            type="button"
+
+            class="target-score-btn"
+
+            [disabled]="isSessionRunning()"
+
+            (click)="decreaseSelectedLevelTargetScore()">
+
+            -
+
+          </button>
+
+
+
+          <input
+
+            type="number"
+
+            class="target-score-input"
+
+            min="50"
+
+            max="1000"
+
+            step="10"
+
+            [disabled]="isSessionRunning()"
+
+            [value]="selectedEditableTargetScore()"
+
+            (input)="updateSelectedLevelTargetScore(($any($event.target).value ?? '0').toString())" />
+
+
+
+          <button
+
+            type="button"
+
+            class="target-score-btn"
+
+            [disabled]="isSessionRunning()"
+
+            (click)="increaseSelectedLevelTargetScore()">
+
+            +
+
+          </button>
+
+        </div>
+
+      </div>
+
+    }
+
+  </section>
+
+
+
+  @if (isLevelReportVisible()) {
+
+    @if (levelReport(); as report) {
+
+      <section class="level-report-backdrop" aria-label="level report">
+
+        <article class="level-report-card">
+
+          <header class="level-report-header">
+
+            <div class="level-report-heading">
+
+              <p>Level {{ report.level }} {{ report.outcomeLabel }}</p>
+
+              <h2>Performance Report</h2>
+
+              <small>{{ report.completedAtLabel }}</small>
+
+            </div>
+
+
+
+            <button
+
+              type="button"
+
+              class="report-close-btn"
+
+              aria-label="Close report"
+
+              (click)="closeLevelReport()">
+
+              X
+
+            </button>
+
+          </header>
+
+
+
+          <div class="level-report-objective">
+
+            <span>{{ report.completionLabel }}</span>
+
+            <strong>{{ report.objective }}</strong>
+
+          </div>
+
+
+
+          <div class="level-report-grid">
+
+            <article>
+
+              <span>Difficulty</span>
+
+              <strong>{{ report.difficulty }}</strong>
+
+            </article>
+
+            <article>
+
+              <span>Time</span>
+
+              <strong>{{ report.elapsedTimeLabel }}</strong>
+
+            </article>
+
+            <article>
+
+              <span>Score</span>
+
+              <strong>{{ report.finalScore }}</strong>
+
+            </article>
+
+            <article>
+
+              <span>Accuracy</span>
+
+              <strong>{{ report.accuracy }}%</strong>
+
+            </article>
+
+            <article>
+
+              <span>Shots</span>
+
+              <strong>{{ report.shots }}</strong>
+
+            </article>
+
+            <article>
+
+              <span>Hits</span>
+
+              <strong>{{ report.hits }}</strong>
+
+            </article>
+
+            <article>
+
+              <span>Misses</span>
+
+              <strong>{{ report.misses }}</strong>
+
+            </article>
+
+            <article>
+
+              <span>Points / Shot</span>
+
+              <strong>{{ report.pointsPerShot }}</strong>
+
+            </article>
+
+            <article>
+
+              <span>Hits / Minute</span>
+
+              <strong>{{ report.hitsPerMinute }}</strong>
+
+            </article>
+
+          </div>
+
+
+
+          <div class="level-report-actions">
+
+            <button
+
+              type="button"
+
+              class="session-btn secondary"
+
+              [disabled]="!canGoToNextLevel()"
+
+              (click)="goToNextLevel()">
+
+              Next Level
+
+            </button>
+
+            <button type="button" class="session-btn" (click)="restartSession()">Retry</button>
+
+          </div>
+
+        </article>
+
+      </section>
+
+    }
+
+  }
+
+</main>

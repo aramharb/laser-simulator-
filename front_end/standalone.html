@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laser Simulation Standalone</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="standalone.css" />
+</head>
+<body>
+  <main class="screen">
+    <div id="pixiHost" class="pixi-host" aria-label="Simulation stage"></div>
+
+    <section class="hud hud-top" aria-label="session controls">
+      <div class="session-controls">
+        <div id="difficultyControls" class="difficulty-controls" aria-label="difficulty buttons"></div>
+
+        <div class="run-controls">
+          <button id="startBtn" type="button" class="session-btn">Start</button>
+          <button id="restartBtn" type="button" class="session-btn secondary">Restart</button>
+        </div>
+      </div>
+
+      <div class="timer-box">
+        <span>Minuteur</span>
+        <strong id="timerLabel">00:00</strong>
+      </div>
+
+      <p id="sessionNote" class="session-note">No objective</p>
+    </section>
+
+    <section class="hud hud-left" aria-label="scoreboard">
+      <article class="metric">
+        <span>Score</span>
+        <strong id="scoreValue">0</strong>
+      </article>
+      <article class="metric">
+        <span>Accuracy</span>
+        <strong id="accuracyValue">0%</strong>
+      </article>
+      <article class="metric">
+        <span>Hits</span>
+        <strong id="hitsValue">0</strong>
+      </article>
+      <article class="metric">
+        <span>Points</span>
+        <strong id="pointsValue">0</strong>
+      </article>
+    </section>
+
+    <section class="hud hud-right" aria-label="levels">
+      <button id="levelsToggle" type="button" class="levels-toggle">
+        <span>Levels</span>
+        <strong id="currentLevelLabel">Level 1</strong>
+      </button>
+
+      <div id="levelsScroll" class="levels-scroll hidden"></div>
+
+      <div id="targetScoreEditor" class="target-score-editor hidden" aria-label="target score controls">
+        <p id="targetScoreEditorLabel">Target Score</p>
+
+        <div class="target-score-controls">
+          <button id="targetScoreDecreaseBtn" type="button" class="target-score-btn">-</button>
+
+          <input
+            id="targetScoreInput"
+            type="number"
+            class="target-score-input"
+            min="50"
+            max="1000"
+            step="10"
+            value="180"
+          />
+
+          <button id="targetScoreIncreaseBtn" type="button" class="target-score-btn">+</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="levelReportBackdrop" class="level-report-backdrop hidden" aria-label="level report">
+      <article class="level-report-card">
+        <header class="level-report-header">
+          <div class="level-report-heading">
+            <p id="reportOutcome"></p>
+            <h2>Performance Report</h2>
+            <small id="reportCompletedAt"></small>
+          </div>
+
+          <button id="reportCloseBtn" type="button" class="report-close-btn" aria-label="Close report">X</button>
+        </header>
+
+        <div class="level-report-objective">
+          <span id="reportCompletionLabel"></span>
+          <strong id="reportObjective"></strong>
+        </div>
+
+        <div class="level-report-grid">
+          <article><span>Difficulty</span><strong id="reportDifficulty"></strong></article>
+          <article><span>Time</span><strong id="reportTime"></strong></article>
+          <article><span>Score</span><strong id="reportScore"></strong></article>
+          <article><span>Accuracy</span><strong id="reportAccuracy"></strong></article>
+          <article><span>Shots</span><strong id="reportShots"></strong></article>
+          <article><span>Hits</span><strong id="reportHits"></strong></article>
+          <article><span>Misses</span><strong id="reportMisses"></strong></article>
+          <article><span>Points / Shot</span><strong id="reportPointsPerShot"></strong></article>
+          <article><span>Hits / Minute</span><strong id="reportHitsPerMinute"></strong></article>
+        </div>
+
+        <div class="level-report-actions">
+          <button id="nextLevelBtn" type="button" class="session-btn secondary">Next Level</button>
+          <button id="retryBtn" type="button" class="session-btn">Retry</button>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/pixi.js@8/dist/pixi.min.js"></script>
+  <script src="standalone.js"></script>
+</body>
+</html>
